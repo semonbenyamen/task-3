@@ -1,16 +1,16 @@
 //first step
 require("dotenv").config();
 const express = require("express");
+const app = express();
+app.use(express.json());
 const mongoose = require("mongoose");
 
-const app = express();
-const Product = require("./models/Product");
-app.use(express.json());
+const Author = require("./models/Author");
+const Book = require("./models/Book");
 
-const mongo_url = process.env.DB_URL;
 async function dbconnection() {
     try {
-        await mongoose.connect(mongo_url);
+        await mongoose.connect("mongodb://127.0.0.1:27017/firstApp");
         console.log("MongoDB connected successfully");
     } catch (err) {
         console.error("MongoDB connection error:", err);
@@ -18,20 +18,106 @@ async function dbconnection() {
 }
 dbconnection();
 
+// const Library = require("./models/Library");
 
-app.post("/Product", async(req, res) => {
+
+app.post('/api/library', async (req, res) => {
     try {
-        const {productName, price, category} = req.body;
+        const book = await Book.create(req.body);
 
-        res.status(201).json({
+        res.json({
             success: true,
-            msg: "Done Created Product",
-            data: Product,
+            msg: "Book added successfully",
+            data: book
         });
     } catch (error) {
-        console.log(error);
+        res.json({ success: false, error: error.message});
     }
 });
+app.get('/api/library', async(req, res) => {
+    try {
+        const books = await Book.find().populate("author");
+        res.json({
+            success: true,
+            count: books.length,
+            data: books
+        });
+    }catch (error) {
+        res.json({success: false, error: error.message});
+    }
+});
+app.post('/api/author', async (req, res) => {
+    try {
+        const author = await Author.create(req.body);
+        res.json({
+            success: true,
+            msg: "Author added successfully",
+            data: author
+        });
+    } catch (error) {
+        res.json({ success: false, error: error.message});
+    }
+});
+
+app.post('/api/book', async(req, res) => {
+    try {
+        const Book = await Book.create(req.body);
+        res.json({
+            success: true,
+            msg: "Book created successfully! 📚",
+            data: newBook
+        });
+    } catch (error) {
+         res.json({success: false, error: error.message});
+    }
+});
+app.get('/api/book', async(req, res) => {
+    try {
+        const Book = await Book.find();
+        res.json({
+            success: true,
+            data: Book
+        });
+    }catch (error) {
+        res.json({success: false, error: error.message});
+    }
+});
+
+app.patch('/api/library/:id', async (req, res) => {
+    try {
+    const updatedBook = await Library.findByIdAndUpdate (
+        req.params.id,
+        req.body,
+        {new: true, runValidators: true}
+    );
+    if (!updatedBook) {
+        return res.json({success: false, msg: "Book not found"});
+    }
+    res.json({
+        success: true,
+        msg: "Book updated successfully!",
+        data: updatedBook
+    });
+} catch (error) {
+    res.json({success: false, error: error.message });
+}
+});
+app.delete('/api/library/:id', async(req, res) => {
+    try {
+        const deletedBook = await Library.findByIdAndDelete(req.params.id);
+        if (!deletedBook) {
+            return res.json({ success: false, msg: "Book not found"});
+        }
+        res.json({
+            success: true,
+            msg: "Book deleted successfully",
+            data: deletedBook
+        });
+    } catch (error) {
+        res.json({ success: false, error: Error.message});
+    }
+});
+
 
 
 
