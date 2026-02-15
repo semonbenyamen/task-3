@@ -1,25 +1,15 @@
 const mongoose = require("mongoose");
 
-const productSchema = new mongoose.Schema({
-    productName: {
+const BookSchema = new mongoose.Schema({
+    title: {
         type: String,
         required: true,
-        trim: true,
     },
-    price: {
-        type: Number,
+    author: {
+        Type: mongoose.Schema.Types.ObjectId, 
+        Ref:"Author",
         required: true,
-        min: ["1"]
     },
-    category: {
-        type: String,
-        required: true,
-        enum: {
-            values: ["Electronics"],
-            message: "Please choose Electronics only"
-        }
-    },
+});
 
-}, {timestamps: true});
-
-module.exports = mongoose.model("Product", productSchema);
+module.exports = mongoose.model("Book", bookSchema);
